@@ -14,7 +14,7 @@ when there is code doing that.
 This patch reverts the change to fix the crash in Electron.
 
 diff --git a/third_party/blink/renderer/core/frame/local_frame.cc b/third_party/blink/renderer/core/frame/local_frame.cc
-index ef9f0b8a12814c141a6c4403c1054383bca2419d..52a96f76489a3848cd2c507f4d90aa5539e674e3 100644
+index b11ef9562a034a1721c3c679d37015c2ce5a33ab..d88146acf3ba93a71e9034dcf0190fded09ab87e 100644
 --- a/third_party/blink/renderer/core/frame/local_frame.cc
 +++ b/third_party/blink/renderer/core/frame/local_frame.cc
 @@ -626,10 +626,6 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
@@ -28,14 +28,15 @@ index ef9f0b8a12814c141a6c4403c1054383bca2419d..52a96f76489a3848cd2c507f4d90aa55
    if (!Client())
      return false;
  
-@@ -669,6 +665,10 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
-   // Notify WindowProxyManager that the frame is closing, since its cleanup ends
-   // up calling back to LocalFrameClient via WindowProxy.
-   GetWindowProxyManager()->ClearForClose();
+@@ -667,6 +663,11 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
+   DCHECK(!view_->IsAttached());
+   Client()->WillBeDetached();
+ 
 +  // This is the earliest that scripting can be disabled:
 +  // - FrameLoader::Detach() can fire XHR abort events
 +  // - Document::Shutdown() can dispose plugins which can run script.
 +  ScriptForbiddenScope forbid_script;
- 
++
    // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
    CHECK(!view_->IsAttached());
+   SetView(nullptr);
